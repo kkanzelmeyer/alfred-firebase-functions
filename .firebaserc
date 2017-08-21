@@ -1,5 +1,8 @@
 {
   "projects": {
     "default": "alfred-d5f8a"
+  },
+  "functions": {
+    "source": "functions/dist"
   }
 }
