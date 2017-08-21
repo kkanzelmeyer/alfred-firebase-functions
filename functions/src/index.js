@@ -1,5 +1,6 @@
 import path from 'path';
-import functions from 'firebase-functions';
+// import {functions} from 'firebase-functions';
+const functions = require('firebase-functions');
 import admin from 'firebase-admin';
 
 admin.initializeApp(functions.config().firebase);
