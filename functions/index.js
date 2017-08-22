@@ -1,71 +1,62 @@
-'use strict';
+const path = require('path');
+// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
+const functions = require('firebase-functions');
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.syncFileInDatabase = undefined;
-
-var _path = require('path');
-
-var _path2 = _interopRequireDefault(_path);
-
-var _firebaseAdmin = require('firebase-admin');
-
-var _firebaseAdmin2 = _interopRequireDefault(_firebaseAdmin);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// import {functions} from 'firebase-functions';
-var functions = require('firebase-functions');
-
-
-_firebaseAdmin2.default.initializeApp(functions.config().firebase);
+// The Firebase Admin SDK to access the Firebase Realtime Database.
+const admin = require('firebase-admin');
+admin.initializeApp(functions.config().firebase);
 
 // set up refs
-var visitorsBucket = functions.storage.bucket('visitors').object();
-var visitorsDatabase = functions.database.ref('/visitorFiles');
+const visitorsBucket = functions.storage.object();
+const visitorsDatabase = admin.database().ref('/visitorFiles');
 
-var syncFileInDatabase = function syncFileInDatabase() {
-  return visitorsBucket.onChange(function (event) {
-    var object = event.data; // The Storage object.
+exports.syncFileInDatabase = visitorsBucket.onChange(event => {
+    const object = event.data; // The Storage object.
 
     // The Storage bucket that contains the file.
-    var fileBucket = object.bucket;
+    const fileBucket = object.bucket;
     // File path in the bucket.
-    var filePath = object.name;
+    const filePath = object.name;
+
+    // STOP CONDITIONS
+    const dir = filePath.split('/')[0];
+    if (dir != 'visitors') {
+      console.log(`event occurred in directory ${dir} - ignoring`);
+      return null;
+    }
+
     // whether a resource is deleted
-    var resourceState = object.resourceState;
+    const resourceState = object.resourceState;
     // Get the file name.
-    var fileName = _path2.default.basename(filePath);
-    console.log({ fileBucket: fileBucket, filePath: filePath, resourceState: resourceState, fileName: fileName });
+    const fileName = path.basename(filePath);
+    console.log({ fileBucket, filePath, resourceState, fileName });
 
     // update the visitors database
     if (resourceState === 'exists') {
-      visitorsDatabase.push(fileName);
+      visitorsDatabase.push(filePath);
     } else {
-      visitorDatabase.orderByValue().equalTo(fileName).remove();
+      visitorDatabase.orderByValue().equalTo(filePath).remove();
     }
 
     // send FCM
     // topic
-    var topic = 'highScores';
+    const topic = 'visitor';
     // Notification details.
-    var payload = {
+    const payload = {
       notification: {
-        title: 'You have a new follower!',
-        body: follower.displayName + ' is now following you.',
-        icon: follower.photoURL
-      }
+        title: 'Visitor at the front door!',
+        body: `Someone's at the door!`,
+        click_action: 'fcm.ACTION.VISITOR',
+      },
     };
     // Send a message to devices subscribed to the provided topic.
-    _firebaseAdmin2.default.messaging().sendToTopic(topic, payload).then(function (response) {
-      // See the MessagingTopicResponse reference documentation for the
-      // contents of response.
-      console.log('Successfully sent message:', response);
-    }).catch(function (error) {
-      console.log('Error sending message:', error);
-    });
+    admin.messaging().sendToTopic(topic, payload)
+      .then(function(response) {
+        // See the MessagingTopicResponse reference documentation for the
+        // contents of response.
+        console.log('Successfully sent message:', response);
+      })
+      .catch(function(error) {
+        console.log('Error sending message:', error);
+      });
   });
-};
-
-exports.syncFileInDatabase = syncFileInDatabase;
