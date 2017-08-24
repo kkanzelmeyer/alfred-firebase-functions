@@ -48,6 +48,10 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
         body: `Someone's at the door!`,
         click_action: 'fcm.ACTION.VISITOR',
       },
+      data: {
+        sender: 'visitor',
+        time: Date.now(),
+      },
     };
     // Send a message to devices subscribed to the provided topic.
     admin.messaging().sendToTopic(topic, payload)
