@@ -50,7 +50,7 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
       },
       data: {
         sender: 'visitor',
-        time: (new Date).getTime(),
+        time: (new Date).getTime().toString(),
       },
     };
     // Send a message to devices subscribed to the provided topic.
