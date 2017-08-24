@@ -46,7 +46,6 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
       notification: {
         title: 'Visitor at the front door!',
         body: `Someone's at the door!`,
-        click_action: 'fcm.ACTION.VISITOR',
       },
       data: {
         sender: 'visitor',
