@@ -41,16 +41,19 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
     // send FCM
     // topic
     const topic = 'visitor';
+    const ONE_HOUR = 3600;
     // Notification details.
     const payload = {
-      notification: {
-        title: 'Visitor at the front door!',
+      'notification': {
+        title: 'Ding Dong!',
         body: `Someone's at the door!`,
       },
-      data: {
+      'data': {
         sender: 'visitor',
         time: (new Date).getTime().toString(),
       },
+      'collapse_key': 'alfred_visitor',
+      'time_to_live': ONE_HOUR,
     };
     // Send a message to devices subscribed to the provided topic.
     admin.messaging().sendToTopic(topic, payload)
