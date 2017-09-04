@@ -1,5 +1,6 @@
 const path = require('path');
-// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
+// The Cloud Functions for Firebase SDK to create Cloud Functions
+// and setup triggers.
 const functions = require('firebase-functions');
 
 // The Firebase Admin SDK to access the Firebase Realtime Database.
@@ -42,6 +43,11 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
     // topic
     const topic = 'visitor';
     const ONE_HOUR = 3600;
+    const options = {
+      timeToLive: ONE_HOUR,
+      priority: 'high',
+      collapseKey: 'alfred visitor',
+    };
     // Notification details.
     const payload = {
       'notification': {
@@ -52,11 +58,9 @@ exports.syncFileInDatabase = visitorsBucket.onChange(event => {
         sender: 'visitor',
         time: (new Date).getTime().toString(),
       },
-      'collapse_key': 'alfred_visitor',
-      'time_to_live': ONE_HOUR,
     };
     // Send a message to devices subscribed to the provided topic.
-    admin.messaging().sendToTopic(topic, payload)
+    admin.messaging().sendToTopic(topic, payload, options)
       .then(function(response) {
         // See the MessagingTopicResponse reference documentation for the
         // contents of response.
